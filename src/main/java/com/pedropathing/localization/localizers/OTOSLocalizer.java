@@ -8,31 +8,32 @@ import com.pedropathing.localization.Localizer;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.MathFunctions;
 import com.pedropathing.pathgen.Vector;
+
 import static com.pedropathing.localization.constants.OTOSConstants.*;
 
 /**
  * This is the OTOSLocalizer class. This class extends the Localizer superclass and is a
  * localizer that uses the SparkFun OTOS. The diagram below, which is modified from
  * Road Runner, shows a typical set up.
- *
+ * <p>
  * The view is from the top of the robot looking downwards.
- *
+ * <p>
  * left on robot is the y positive direction
- *
+ * <p>
  * forward on robot is the x positive direction
- *
- *                         forward (x positive)
- *                                △
- *                                |
- *                                |
- *                         /--------------\
- *                         |              |
- *                         |              |
- *                         | ||        || |
- *  left (y positive) <--- | ||        || |  
- *                         |     ____     |
- *                         |     ----     |
- *                         \--------------/
+ * <p>
+ * forward (x positive)
+ * △
+ * |
+ * |
+ * /--------------\
+ * |              |
+ * |              |
+ * | ||        || |
+ * left (y positive) <--- | ||        || |
+ * |     ____     |
+ * |     ----     |
+ * \--------------/
  *
  * @author Anyi Lin - 10158 Scott's Bots
  * @version 1.0, 7/20/2024
@@ -61,14 +62,14 @@ public class OTOSLocalizer extends Localizer {
      * This creates a new OTOSLocalizer from a HardwareMap and a Pose, with the Pose
      * specifying the starting pose of the localizer.
      *
-     * @param map the HardwareMap
+     * @param map          the HardwareMap
      * @param setStartPose the Pose to start from
      */
 
     public OTOSLocalizer(HardwareMap map, Pose setStartPose) {
         hardwareMap = map;
 
-        if(useCorrectedOTOSClass) {
+        if (useCorrectedOTOSClass) {
             otos = hardwareMap.get(SparkFunOTOSCorrected.class, hardwareMapName);
         } else {
             otos = hardwareMap.get(SparkFunOTOS.class, hardwareMapName);
@@ -83,6 +84,10 @@ public class OTOSLocalizer extends Localizer {
         otos.calibrateImu();
         otos.resetTracking();
 
+        SparkFunOTOS.SignalProcessConfig config = otos.getSignalProcessConfig();
+        config.enAcc = useAccelerometer;
+        otos.setSignalProcessConfig(config);
+
         setStartPose(setStartPose);
 
         otosPose = new SparkFunOTOS.Pose2D();
@@ -93,7 +98,6 @@ public class OTOSLocalizer extends Localizer {
 
         resetOTOS();
     }
-
 
 
     /**
@@ -160,7 +164,7 @@ public class OTOSLocalizer extends Localizer {
      */
     @Override
     public void update() {
-        otos.getPosVelAcc(otosPose,otosVel,otosAcc);
+        otos.getPosVelAcc(otosPose, otosVel, otosAcc);
         totalHeading += MathFunctions.getSmallestAngleDifference(otosPose.h, previousHeading);
         previousHeading = otosPose.h;
     }

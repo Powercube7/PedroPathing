@@ -43,4 +43,6 @@ public class OTOSConstants {
     /** The angular scalar of the OTOS sensor
      * @value Default Value: 1.0 */
     public static double angularScalar = 1.0;
+
+    public static boolean useAccelerometer = true;
 }
