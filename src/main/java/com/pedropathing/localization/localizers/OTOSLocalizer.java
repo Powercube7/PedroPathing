@@ -1,6 +1,5 @@
 package com.pedropathing.localization.localizers;
 
-import com.acmerobotics.roadrunner.ftc.SparkFunOTOSCorrected;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -39,14 +38,10 @@ import static com.pedropathing.localization.constants.OTOSConstants.*;
  * @version 1.0, 7/20/2024
  */
 public class OTOSLocalizer extends Localizer {
-    private HardwareMap hardwareMap;
     private Pose startPose;
-    private SparkFunOTOS otos;
-    private SparkFunOTOS.Pose2D otosPose;
-    private SparkFunOTOS.Pose2D otosVel;
-    private SparkFunOTOS.Pose2D otosAcc;
-    private double previousHeading;
-    private double totalHeading;
+    private final SparkFunOTOS otos;
+    private final SparkFunOTOS.Pose2D otosPose, otosVel, otosAcc;
+    private double previousHeading, totalHeading;
 
     /**
      * This creates a new OTOSLocalizer from a HardwareMap, with a starting Pose at (0,0)
@@ -67,13 +62,7 @@ public class OTOSLocalizer extends Localizer {
      */
 
     public OTOSLocalizer(HardwareMap map, Pose setStartPose) {
-        hardwareMap = map;
-
-        if (useCorrectedOTOSClass) {
-            otos = hardwareMap.get(SparkFunOTOSCorrected.class, hardwareMapName);
-        } else {
-            otos = hardwareMap.get(SparkFunOTOS.class, hardwareMapName);
-        }
+        otos = map.get(SparkFunOTOS.class, hardwareMapName);
 
         otos.setLinearUnit(linearUnit);
         otos.setAngularUnit(angleUnit);

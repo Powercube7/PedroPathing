@@ -1,6 +1,5 @@
 package com.pedropathing.localization.constants;
 
-import com.acmerobotics.roadrunner.ftc.SparkFunOTOSCorrected;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -13,10 +12,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  */
 
 public class OTOSConstants {
-
-    /** Whether to use the corrected OTOS class
-     * @value Default Value: false */
-    public static boolean useCorrectedOTOSClass = false;
 
     /** The name of the OTOS sensor in the hardware map
      * @value Default Value: "sensor_otos" */
