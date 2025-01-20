@@ -81,8 +81,8 @@ public class Path {
      * double endHeading, double endTime) method.
      *
      * @param startHeading The start of the linear heading interpolation.
-     * @param endHeading The end of the linear heading interpolation.
-     *                   This will be reached at the end of the Path if no end time is specified.
+     * @param endHeading   The end of the linear heading interpolation.
+     *                     This will be reached at the end of the Path if no end time is specified.
      */
     public void setLinearHeadingInterpolation(double startHeading, double endHeading) {
         linearInterpolationEndTime = 1;
@@ -99,10 +99,10 @@ public class Path {
      * generally interpolating to something like 0.8 of your Path should work best.
      *
      * @param startHeading The start of the linear heading interpolation.
-     * @param endHeading The end of the linear heading interpolation.
-     *                   This will be reached at the end of the Path if no end time is specified.
-     * @param endTime The end time on the Path that the linear heading interpolation will finish.
-     *                This value ranges from [0, 1] since Bezier curves are parametric functions.
+     * @param endHeading   The end of the linear heading interpolation.
+     *                     This will be reached at the end of the Path if no end time is specified.
+     * @param endTime      The end time on the Path that the linear heading interpolation will finish.
+     *                     This value ranges from [0, 1] since Bezier curves are parametric functions.
      */
     public void setLinearHeadingInterpolation(double startHeading, double endHeading, double endTime) {
         linearInterpolationEndTime = MathFunctions.clamp(endTime, 0.000000001, 1);
@@ -127,32 +127,39 @@ public class Path {
      * This gets the closest Point from a specified pose to the BezierCurve with a binary search
      * that is limited to some specified step limit.
      *
-     * @param pose the pose.
+     * @param pose            the pose.
      * @param searchStepLimit the binary search step limit.
      * @return returns the closest Point.
      */
     public Pose getClosestPoint(Pose pose, int searchStepLimit) {
-        double lower = 0;
-        double upper = 1;
-        Point returnPoint;
+        if (curve instanceof BezierPoint) {
+            closestPointTValue = 0;
+        } else if (curve instanceof BezierLine) {
+            Point start = curve.getFirstControlPoint(), end = getLastControlPoint();
+            closestPointTValue = MathFunctions.dotProduct(
+                    MathFunctions.subtractPoints(new Point(pose), start),
+                    MathFunctions.subtractPoints(end, start)
+            ) / Math.max(1e-6, curve.length() * curve.length()); // Avoid division by 0
+            closestPointTValue = MathFunctions.clamp(closestPointTValue, 0, 1);
+        } else {
+            double lower = 0;
+            double upper = 1;
 
-        // we don't need to calculate the midpoint, so we start off at the 1/4 and 3/4 point
-        for (int i = 0; i < searchStepLimit; i++) {
-            if (MathFunctions.distance(pose, getPoint(lower + 0.25 * (upper-lower))) > MathFunctions.distance(pose, getPoint(lower + 0.75 * (upper-lower)))) {
-                lower += (upper-lower)/2.0;
-            } else {
-                upper -= (upper-lower)/2.0;
+            // we don't need to calculate the midpoint, so we start off at the 1/4 and 3/4 point
+            for (int i = 0; i < searchStepLimit; i++) {
+                if (MathFunctions.distance(pose, getPoint(lower + 0.25 * (upper - lower))) > MathFunctions.distance(pose, getPoint(lower + 0.75 * (upper - lower)))) {
+                    lower += (upper - lower) / 2.0;
+                } else {
+                    upper -= (upper - lower) / 2.0;
+                }
             }
+
+            closestPointTValue = lower + 0.5 * (upper - lower);
         }
 
-        closestPointTValue = lower + 0.5 * (upper-lower);
-
-        returnPoint = getPoint(closestPointTValue);
-
+        Point returnPoint = getPoint(closestPointTValue);
         closestPointTangentVector = curve.getDerivative(closestPointTValue);
-
         closestPointNormalVector = curve.getApproxSecondDerivative(closestPointTValue);
-
         closestPointCurvature = curve.getCurvature(closestPointTValue);
 
         return new Pose(returnPoint.getX(), returnPoint.getY(), getClosestPointHeadingGoal());
@@ -270,7 +277,8 @@ public class Path {
      */
     public double getClosestPointHeadingGoal() {
         if (isTangentHeadingInterpolation) {
-            if (followTangentReversed) return MathFunctions.normalizeAngle(closestPointTangentVector.getTheta() + Math.PI);
+            if (followTangentReversed)
+                return MathFunctions.normalizeAngle(closestPointTangentVector.getTheta() + Math.PI);
             return closestPointTangentVector.getTheta();
         } else {
             return getHeadingGoal(closestPointTValue);
@@ -285,7 +293,8 @@ public class Path {
      */
     public double getHeadingGoal(double t) {
         if (isTangentHeadingInterpolation) {
-            if (followTangentReversed) return MathFunctions.normalizeAngle(curve.getDerivative(t).getTheta() + Math.PI);
+            if (followTangentReversed)
+                return MathFunctions.normalizeAngle(curve.getDerivative(t).getTheta() + Math.PI);
             return curve.getDerivative(t).getTheta();
         } else {
             if (t > linearInterpolationEndTime) {
@@ -311,8 +320,7 @@ public class Path {
      * @return returns if at start.
      */
     public boolean isAtParametricStart() {
-        if (closestPointTValue <= 1- pathEndTValueConstraint) return true;
-        return false;
+        return closestPointTValue <= 1 - pathEndTValueConstraint;
     }
 
     /**

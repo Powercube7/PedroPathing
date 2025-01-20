@@ -285,6 +285,10 @@ public class MathFunctions {
         return one.getXComponent() * two.getXComponent() + one.getYComponent() * two.getYComponent();
     }
 
+    public static double dotProduct(Point one, Point two) {
+        return one.getX() * two.getX() + one.getY() * two.getY();
+    }
+
     /**
      * This computes the first Vector crossed with the second Vector, so a cross product.
      * Do note that order matters here.
